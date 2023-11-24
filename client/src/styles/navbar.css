@@ -1,0 +1,24 @@
+.navbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-bottom: 2px solid gray;
+}
+.logo{
+    font-weight: 900;
+    font-size: 1.7rem;
+}
+.menu ul{
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: center;
+}
+.menu ul li{
+    list-style: none;
+}
+.menu ul li a{
+    text-decoration: none;
+    color:goldenrod;
+    font-size: 1.2rem;
+}

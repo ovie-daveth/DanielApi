@@ -1,0 +1,32 @@
+.container{
+    height: 90dvh;
+    width: 350px;
+    padding-top: 5rem;
+}
+.formContainer{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: flex-start;
+}
+.formData{
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+}
+.btn-submit{
+    padding: 0.5rem;
+    border:2px solid transparent;
+    background-color: blue;
+    border-radius: 10px;
+    color:white;
+    transition: all 0.3s;
+}
+.btn-submit:hover{
+    background-color: transparent;
+    color: black;
+    border-color: gray;
+}
+.formData input{
+    padding: 10px;
+}
