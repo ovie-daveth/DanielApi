@@ -17,7 +17,7 @@ export const signup = async (req, res) => {
         if(!email){
             return res.status(StatusCodes.BAD_REQUEST).json({message: 'Please enter a valid email address'})
         }
-        if(!password.length > 5 || !password){
+        if(password.length < 5 || !password){
             return res.status(StatusCodes.BAD_REQUEST).json({message: 'Password must be at least 5 characters long'})
         }
 
@@ -34,17 +34,21 @@ export const signup = async (req, res) => {
 
         User.push(newUser);
 
-        const token = jwt.sign({ id }, JWT_SECRET);
+        const token = jwt.sign({ id }, JWT_SECRET, { expiresIn: '1h' }); // Include an expiration time
 
-        req.session.authToken = token
-        req.session.isLoggedIn = true
+        req.session.authToken = token;
+        req.session.isLoggedIn = true;
 
-        res.status(StatusCodes.CREATED).json({message: 'User saved successfully', data: {
-            id, username, email
-        }})
-
+        res.status(StatusCodes.CREATED).json({
+            success: true,
+            message: 'User registered successfully',
+            data: { id, username, email }
+        });
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: error.message})
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+            success: false, 
+            message: 'Internal server error' });
     }
 }
 
@@ -73,16 +77,19 @@ export const signin = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({message: 'Invalid credentials'})
         }
         
-
-        const token = jwt.sign({id: user.id}, JWT_SECRET)
+        const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' }); // Include an expiration time
 
         req.session.authToken = token;
         req.session.isLoggedIn = true;
 
-        res.status(StatusCodes.OK).json({message: 'login successful', data: {id: user.id, email, username: user.username}})
-
+        res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'Login successful',
+            data: { id: user.id, email, username: user.username }
+        });
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: error.message})
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
     }
 }
 

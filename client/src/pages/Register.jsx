@@ -1,27 +1,37 @@
 import React, {useState, useEffect} from 'react'
 import '../styles/login.css';
 import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 
 const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [password2, setPassword2] = useState('');
+  const navigate = useNavigate();
 
 
-  const  RegisterForm = async(e) =>{
+  const RegisterForm = async (e) => {
     e.preventDefault();
-    console.log(username);
-    if(password != password2){
+
+    if (password === password2) {
+      try {
+        const response = await axios.post("http://localhost:5000/signup", { username, email, password });
+
+        if (response.data.success) {
+          console.log(response.data.message);
+          // setUser(response.data.data)
+          navigate("/login");
+        } else {
+          console.log(response.data.message);
+        }
+      } catch (error) {
+        console.log("An error occurred:", error.message);
+      }
+    } else {
       alert('Passwords do not match');
     }
-    try {
-      const response = await axios.post("http://localhost:5000/signup", {username, email, password});
-      console.log(response.data);
-    } catch (error) {
-      console.log(error.message)
-    }
-  }
+  };
   return (
     <div className="container">
       <form className="formContainer" onSubmit={RegisterForm}>
