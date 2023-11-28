@@ -1,4 +1,4 @@
-import User from '../schema/user.js';
+import User from '../schema/User.js';
 import {  StatusCodes } from 'http-status-codes';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcrypt';
@@ -22,29 +22,31 @@ export const signup = async (req, res) => {
         }
 
         const passwordHash = await bcrypt.hash(password, saltRounds)
+
+        const data = {
+            username, email
+        }
         
-        const id = nanoid()
+        await User.init()
+        const user = await User.create({
+            personalInfo: {
+                ...data,
+                password: passwordHash
+            }
+        })
 
-        const newUser = {
-            id,
-            username,
-            email,
-            passwordHash,
-        };
-
-        User.push(newUser);
-
-        const token = jwt.sign({ id }, JWT_SECRET);
+        const token = jwt.sign({ id: user._id }, JWT_SECRET);
 
         req.session.authToken = token
         req.session.isLoggedIn = true
 
-        res.status(StatusCodes.CREATED).json({message: 'User saved successfully', data: {
-            id, username, email
-        }})
+        res.status(StatusCodes.CREATED).json({message: 'User saved successfully', data})
 
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: error.message})
+        if(error.code === 11000){
+            return res.status(StatusCodes.UNAUTHORIZED).json({message: 'Account with email exists already, Log in'})
+        }
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: error})
     }
 }
 
@@ -60,26 +62,32 @@ export const signin = async (req, res) => {
         }
 
         // check if user with the email address exists
-        const user = User.find(user => user.email === email)
+        const user = await User.findOne({ 'personalInfo.email': email }).exec()
 
         if(!user){
-            return res.status(StatusCodes.BAD_REQUEST).json({message: 'Account with the email does not exist'})
+            return res.status(StatusCodes.UNAUTHORIZED).json({message: 'Invalid email or password'})
         }
 
         // check if provided password matches
-        const isMatch = await bcrypt.compare(password, user.passwordHash)
+        console.log(user)
+        const isMatch = await bcrypt.compare(password, user.personalInfo.password)
 
         if(!isMatch){
-            return res.status(StatusCodes.BAD_REQUEST).json({message: 'Invalid credentials'})
+            return res.status(StatusCodes.UNAUTHORIZED).json({message: 'Invalid email or password'})
         }
         
+        const data = {
+            id: user._id,
+            email: email,
+            username: user.personalInfo.username,
+        }
 
         const token = jwt.sign({id: user.id}, JWT_SECRET)
 
         req.session.authToken = token;
         req.session.isLoggedIn = true;
 
-        res.status(StatusCodes.OK).json({message: 'login successful', data: {id: user.id, email, username: user.username}})
+        res.status(StatusCodes.OK).json({message: 'login successful', data})
 
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: error.message})

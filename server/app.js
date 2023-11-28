@@ -2,6 +2,8 @@ import express from 'express';
 import AuthRoute from './routes/routes.js';
 import cors from 'cors'
 import session from 'express-session';
+import connectdb from './db/connectdb.js';
+import 'dotenv/config';
 
 const app = express();
 
@@ -23,4 +25,13 @@ const port = 5000;
 
 app.use('/', AuthRoute)
 
-app.listen(port,()=>{console.log(`App listening on ${port}`)})
+const start = async () => {
+  try {
+    await connectdb(process.env.DB_URI);
+    app.listen(port, () => console.log(`App listening on port ${port}`));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+start();
